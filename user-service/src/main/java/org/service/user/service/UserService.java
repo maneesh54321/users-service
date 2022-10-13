@@ -1,17 +1,21 @@
 package org.service.user.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.service.user.exception.LoginFailedException;
 import org.service.user.exception.ValidationException;
 import org.service.user.repository.UserRepository;
+import org.service.user.vo.LoginForm;
 import org.service.user.vo.SignupForm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import javax.persistence.EntityNotFoundException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -66,5 +70,26 @@ public class UserService {
             validationResult.addError("Password must contain at least 8 characters");
         }
         return validationResult;
+    }
+
+
+    public Optional<User> login(LoginForm loginForm) throws LoginFailedException {
+        ValidationResult validationResult = validateLoginForm(loginForm);
+        if (validationResult.isValid()) {
+            try {
+                User user = userRepository.getReferenceById(loginForm.getEmail());
+                String secureInputPassword = generateSecurePassword(loginForm.getPassword());
+                if(user.getSecurePassword().equals(secureInputPassword)) {
+                    return Optional.of(user);
+                }
+            } catch (EntityNotFoundException e){
+                throw new LoginFailedException("Invalid credentials!!");
+            }
+        }
+        throw new LoginFailedException("Invalid credentials!!");
+    }
+
+    private ValidationResult validateLoginForm(LoginForm loginForm) {
+        return new ValidationResult();
     }
 }

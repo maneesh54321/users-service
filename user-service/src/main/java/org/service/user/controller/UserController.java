@@ -1,7 +1,11 @@
 package org.service.user.controller;
 
+import org.service.user.exception.LoginFailedException;
 import org.service.user.exception.ValidationException;
+import org.service.user.service.TokenService;
+import org.service.user.service.User;
 import org.service.user.service.UserService;
+import org.service.user.vo.LoginForm;
 import org.service.user.vo.Response;
 import org.service.user.vo.SignupForm;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,11 +14,16 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Optional;
+
 @RestController
 public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private TokenService tokenService;
 
     @PostMapping("/user/signup")
     public Response signupUser(@RequestBody SignupForm signupForm) {
@@ -24,6 +33,23 @@ public class UserController {
             response = new Response("User signed up successfully!!", HttpStatus.OK);
             response.addData("userId", userId);
         } catch (ValidationException e) {
+            response = new Response(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+        return response;
+    }
+
+    @PostMapping("/user/login")
+    public Response loginUser(@RequestBody LoginForm loginForm) {
+        Response response;
+        try {
+            Optional<User> maybeUser = userService.login(loginForm);
+            if(maybeUser.isPresent()) {
+                response = new Response("user logged in successfully!!", HttpStatus.OK);
+                response.addData("userId", tokenService.createToken(maybeUser.get()));
+            } else {
+                response = new Response("Failed to login!!", HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        } catch (LoginFailedException e) {
             response = new Response(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
         return response;
