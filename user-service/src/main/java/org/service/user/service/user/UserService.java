@@ -2,7 +2,6 @@ package org.service.user.service.user;
 
 import lombok.extern.slf4j.Slf4j;
 import org.service.user.exception.LoginFailedException;
-import org.service.user.repository.UserRepository;
 import org.service.user.vo.LoginForm;
 import org.service.user.vo.SignupForm;
 import org.springframework.beans.factory.annotation.Autowired;

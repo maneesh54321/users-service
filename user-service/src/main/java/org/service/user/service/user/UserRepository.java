@@ -1,6 +1,5 @@
-package org.service.user.repository;
+package org.service.user.service.user;
 
-import org.service.user.service.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
