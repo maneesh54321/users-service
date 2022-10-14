@@ -1,4 +1,4 @@
-package org.service.user.service;
+package org.service.user.jwt;
 
 public enum TokenType {
     JWT("JWT");

@@ -1,9 +1,10 @@
-package org.service.user.service;
+package org.service.user.jwt;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.service.user.service.User;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -11,15 +12,19 @@ import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.Base64;
 
-@Service
-public class TokenService {
+@Component
+public class TokenManager {
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper;
 
     private static final TokenHeader JWT_TOKEN_HEADER = new TokenHeader("SHA512", TokenType.JWT);
 
     private static final String SECRET_SALT = "The secret salt of users-service";
+
+    @Autowired
+    public TokenManager(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
 
     public String createToken(User user) {
         TokenPayload tokenPayload = new TokenPayload(

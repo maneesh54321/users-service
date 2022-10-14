@@ -1,4 +1,4 @@
-package org.service.user.service;
+package org.service.user.jwt;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
