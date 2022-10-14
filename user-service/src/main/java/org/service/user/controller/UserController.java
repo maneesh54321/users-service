@@ -1,10 +1,11 @@
 package org.service.user.controller;
 
 import org.service.user.exception.LoginFailedException;
-import org.service.user.exception.ValidationException;
 import org.service.user.jwt.TokenManager;
-import org.service.user.service.User;
-import org.service.user.service.UserService;
+import org.service.user.service.user.User;
+import org.service.user.service.user.UserService;
+import org.service.user.validation.ValidationResult;
+import org.service.user.validation.Validator;
 import org.service.user.vo.LoginForm;
 import org.service.user.vo.Response;
 import org.service.user.vo.SignupForm;
@@ -15,27 +16,33 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Optional;
-
 @RestController
 @CrossOrigin
 public class UserController {
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
+
+    private final TokenManager tokenManager;
+
+    private final Validator validator;
 
     @Autowired
-    private TokenManager tokenManager;
+    public UserController(UserService userService, TokenManager tokenManager, Validator validator) {
+        this.userService = userService;
+        this.tokenManager = tokenManager;
+        this.validator = validator;
+    }
 
     @PostMapping("/user/signup")
     public Response signupUser(@RequestBody SignupForm signupForm) {
         Response response;
-        try {
+        ValidationResult validationResult = validator.validateSignupForm(signupForm);
+        if(validationResult.isValid()){
             String userId = userService.registerUser(signupForm);
             response = new Response("User signed up successfully!!", HttpStatus.OK);
             response.addData("userId", userId);
-        } catch (ValidationException e) {
-            response = new Response(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } else {
+            response = new Response(validationResult.getErrorMessage(), HttpStatus.BAD_REQUEST);
         }
         return response;
     }
@@ -44,12 +51,13 @@ public class UserController {
     public Response loginUser(@RequestBody LoginForm loginForm) {
         Response response;
         try {
-            Optional<User> maybeUser = userService.login(loginForm);
-            if(maybeUser.isPresent()) {
+            ValidationResult validationResult = validator.validateLoginForm(loginForm);
+            if(validationResult.isValid()) {
+                User user = userService.login(loginForm);
                 response = new Response("user logged in successfully!!", HttpStatus.OK);
-                response.addData("userId", tokenManager.createToken(maybeUser.get()));
+                response.addData("userId", tokenManager.createToken(user.getEmail()));
             } else {
-                response = new Response("Failed to login!!", HttpStatus.INTERNAL_SERVER_ERROR);
+                response = new Response(validationResult.getErrorMessage(), HttpStatus.BAD_REQUEST);
             }
         } catch (LoginFailedException e) {
             response = new Response(e.getMessage(), HttpStatus.BAD_REQUEST);

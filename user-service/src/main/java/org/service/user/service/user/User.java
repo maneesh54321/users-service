@@ -1,4 +1,4 @@
-package org.service.user.service;
+package org.service.user.service.user;
 
 import lombok.*;
 import org.hibernate.Hibernate;

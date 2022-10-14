@@ -1,4 +1,4 @@
-package org.service.user.service;
+package org.service.user.validation;
 
 import lombok.Getter;
 import lombok.Setter;

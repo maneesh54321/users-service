@@ -2,7 +2,6 @@ package org.service.user.jwt;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.service.user.service.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -26,11 +25,11 @@ public class TokenManager {
         this.objectMapper = objectMapper;
     }
 
-    public String createToken(User user) {
+    public String createToken(String audience) {
         TokenPayload tokenPayload = new TokenPayload(
                 "users-service generated token",
                 "users-service",
-                user.getEmail(),
+                audience,
                 Instant.now().plusSeconds(300).toEpochMilli()
         );
         try {
