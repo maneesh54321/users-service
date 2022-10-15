@@ -44,12 +44,20 @@ public class JWTAuthenticationFilter extends GenericFilterBean {
                 } else {
                     Response authResponse = new Response("Unauthenticated user", HttpStatus.UNAUTHORIZED);
                     HttpServletResponse httpServletResponse = (HttpServletResponse) response;
+                    httpServletResponse.addHeader("Access-Control-Allow-Origin", "*");
+                    httpServletResponse.addHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE, HEAD");
+                    httpServletResponse.addHeader("Access-Control-Allow-Headers", "X-PINGOTHER, Origin, X-Requested-With, Content-Type, Accept");
+                    httpServletResponse.addHeader("Access-Control-Max-Age", "1728000");
                     httpServletResponse.setStatus(401);
                     response.getOutputStream().write(objectMapper.writeValueAsBytes(authResponse));
                 }
             } else {
                 Response authResponse = new Response("Unauthenticated user", HttpStatus.UNAUTHORIZED);
                 HttpServletResponse httpServletResponse = (HttpServletResponse) response;
+                httpServletResponse.addHeader("Access-Control-Allow-Origin", "*");
+                httpServletResponse.addHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE, HEAD");
+                httpServletResponse.addHeader("Access-Control-Allow-Headers", "X-PINGOTHER, Origin, X-Requested-With, Content-Type, Accept");
+                httpServletResponse.addHeader("Access-Control-Max-Age", "1728000");
                 httpServletResponse.setStatus(401);
                 response.getOutputStream().write(objectMapper.writeValueAsBytes(authResponse));
             }
