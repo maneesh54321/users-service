@@ -1,7 +1,8 @@
 package org.service.user.controller;
 
+import com.auth0.jwt.JWT;
 import org.service.user.exception.LoginFailedException;
-import org.service.user.jwt.TokenManager;
+import org.service.user.jwt.Constants;
 import org.service.user.service.user.User;
 import org.service.user.service.user.UserService;
 import org.service.user.validation.ValidationResult;
@@ -16,20 +17,18 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.Instant;
+
 @RestController
-@CrossOrigin
 public class UserController {
 
     private final UserService userService;
 
-    private final TokenManager tokenManager;
-
     private final Validator validator;
 
     @Autowired
-    public UserController(UserService userService, TokenManager tokenManager, Validator validator) {
+    public UserController(UserService userService, Validator validator) {
         this.userService = userService;
-        this.tokenManager = tokenManager;
         this.validator = validator;
     }
 
@@ -55,7 +54,11 @@ public class UserController {
             if(validationResult.isValid()) {
                 User user = userService.login(loginForm);
                 response = new Response("user logged in successfully!!", HttpStatus.OK);
-                response.addData("userId", tokenManager.createToken(user.getEmail()));
+                response.addData(
+                        "token",
+                        JWT.create().withIssuer(Constants.ISSUER).withExpiresAt(Instant.now().plusSeconds(300))
+                        .withSubject(user.getEmail()).sign(Constants.SIGNING_ALGORITHM)
+                );
             } else {
                 response = new Response(validationResult.getErrorMessage(), HttpStatus.BAD_REQUEST);
             }

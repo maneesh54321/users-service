@@ -27,4 +27,8 @@ public class Response {
         }
         data.put(key, value);
     }
+
+    public Integer getStatus(){
+        return status.value();
+    }
 }
