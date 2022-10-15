@@ -31,17 +31,19 @@ public class JWTAuthenticationFilter extends GenericFilterBean {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws ServletException, IOException {
         HttpServletRequest httpServletRequest = (HttpServletRequest) request;
 
-        String jwtToken = httpServletRequest.getCookies()[0].getValue();
-
-        log.info("Token in the request is: {}", jwtToken);
-
-        if(((HttpServletRequest) request).getRequestURI().matches(".*(swagger|login|signup)+.*") || tokenManager.isTokenValid(jwtToken)) {
+        if(((HttpServletRequest) request).getRequestURI().matches(".*(swagger|login|signup|\\/v2\\/api-docs)+.*")) {
             chain.doFilter(request, response);
         } else {
-            Response authResponse = new Response("Unauthenticated user", HttpStatus.UNAUTHORIZED);
-            HttpServletResponse httpServletResponse = (HttpServletResponse) response;
-            httpServletResponse.setStatus(401);
-            response.getOutputStream().write(objectMapper.writeValueAsBytes(authResponse));
+            String jwtToken = httpServletRequest.getCookies()[0].getValue();
+            log.info("Token in the request is: {}", jwtToken);
+            if(tokenManager.isTokenValid(jwtToken)){
+                chain.doFilter(request, response);
+            } else {
+                Response authResponse = new Response("Unauthenticated user", HttpStatus.UNAUTHORIZED);
+                HttpServletResponse httpServletResponse = (HttpServletResponse) response;
+                httpServletResponse.setStatus(401);
+                response.getOutputStream().write(objectMapper.writeValueAsBytes(authResponse));
+            }
         }
     }
 }
