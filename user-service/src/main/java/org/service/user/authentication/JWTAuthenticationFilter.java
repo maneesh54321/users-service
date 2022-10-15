@@ -13,6 +13,7 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -31,13 +32,21 @@ public class JWTAuthenticationFilter extends GenericFilterBean {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws ServletException, IOException {
         HttpServletRequest httpServletRequest = (HttpServletRequest) request;
 
-        if(((HttpServletRequest) request).getRequestURI().matches(".*(swagger|login|signup|\\/v2\\/api-docs)+.*")) {
+        if (((HttpServletRequest) request).getRequestURI().matches(".*(swagger|login|signup|\\/v2\\/api-docs)+.*")) {
             chain.doFilter(request, response);
         } else {
-            String jwtToken = httpServletRequest.getCookies()[0].getValue();
-            log.info("Token in the request is: {}", jwtToken);
-            if(tokenManager.isTokenValid(jwtToken)){
-                chain.doFilter(request, response);
+            Cookie[] cookies = httpServletRequest.getCookies();
+            if (cookies.length > 0) {
+                String jwtToken = httpServletRequest.getCookies()[0].getValue();
+                log.info("Token in the request is: {}", jwtToken);
+                if (tokenManager.isTokenValid(jwtToken)) {
+                    chain.doFilter(request, response);
+                } else {
+                    Response authResponse = new Response("Unauthenticated user", HttpStatus.UNAUTHORIZED);
+                    HttpServletResponse httpServletResponse = (HttpServletResponse) response;
+                    httpServletResponse.setStatus(401);
+                    response.getOutputStream().write(objectMapper.writeValueAsBytes(authResponse));
+                }
             } else {
                 Response authResponse = new Response("Unauthenticated user", HttpStatus.UNAUTHORIZED);
                 HttpServletResponse httpServletResponse = (HttpServletResponse) response;
