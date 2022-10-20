@@ -56,7 +56,7 @@ public class UserController {
                 response = new Response("user logged in successfully!!", HttpStatus.OK);
                 response.addData(
                         "token",
-                        JWT.create().withIssuer(Constants.ISSUER).withExpiresAt(Instant.now().plusSeconds(300))
+                        JWT.create().withIssuer(Constants.ISSUER).withExpiresAt(Instant.now().plusSeconds(1800))
                         .withSubject(user.getEmail()).sign(Constants.SIGNING_ALGORITHM)
                 );
             } else {
